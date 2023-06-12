@@ -1,2 +1,2 @@
-# wrl_coordinate_extractin
+# wrl screening
 Screening of unnecessary .wrl files for interference check.
