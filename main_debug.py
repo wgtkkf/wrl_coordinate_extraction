@@ -1,7 +1,10 @@
 # Coded by Takuro TOKUNAGA
 # Created: April 20 2022
 # Update history
-# Updated: June 07 2022 / August 02, 2022 / March 14, 2023 / June 09, 2023
+# Updated: June 07 2022 / August 02, 2022 / March 14, 2023 / June 12, 2023
+
+# Memo:
+# For debugging, only judgement routine is functional
 
 ######################################################################
 # ReadFirst before running - presupposition:                         #
@@ -29,29 +32,11 @@ def main():
     # specify your folder of .wrl files, this is referred in the external functions
     wrl_dir = 'C:\codes_NHK\CADScreening\example_cad_1'
 
-    # removal of unnecessary directories/files
-    RemoveDirectory(wrl_dir)
-
     # judgement routine starts
     begin()
 
-    files = glob.glob(os.path.join(wrl_dir + '\*.wrl'))
-
-    # extraction and merge
-    counter = 0
-    for file in sorted(files):
-        print(os.path.split(file)[1])
-        wrl_file = os.path.split(file)[1]
-
-        # extraction routine
-        num1 = CoordinateCatch(wrl_dir, wrl_file)[0]    # call function, extraction
-        num2 = CoordinateCatch(wrl_dir, wrl_file)[1]    # call function, extraction
-        writetofile(num1, num2, wrl_dir, wrl_file)      # call function, output
-
-        # merge text files
-        FileMerge(wrl_dir, wrl_file)                    # call function, merge - create .dat
-
-        counter += 1
+    # change the number to the maximum of .dat file
+    counter = 65
 
     # judge which extracted .dat is the coil, rename the file
     coil_zmax = CoilCoordinate(wrl_dir, counter)[0]     # call function, coil

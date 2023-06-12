@@ -1,17 +1,18 @@
 # Coded by Takuro TOKUNAGA
 # Created: April 20 2022
-# Last modified: April 22 2022
+# Last update: June 07 2022
 
 import numpy as np
+import os
 import time
 import itertools
 from sys import exit
 start = time.time()
 
-def writetofile(args, arge): # args=arge
+def writetofile(args, arge, WorkDir, FileName): # args=arge
 
     if args != arge:
-        print('The number of "point [" and "]" does not match, exit.')
+        #print('The number of "point [" and "]" does not match, exit.')
         exit()
     #else:
         #print('The number of "point [" and "]" is matched.')
@@ -23,8 +24,11 @@ def writetofile(args, arge): # args=arge
     counter2 = 0
     line_counter = 1
 
-    # open
-    f0 = open('example_general/Part_9.wrl', 'r') # read mode
+    #
+    join_path = os.path.join(WorkDir, FileName)
+
+    # file open
+    f0 = open(join_path, 'r') # read mode
 
     # lines
     s_lines = [line.strip() for line in f0]
@@ -46,20 +50,30 @@ def writetofile(args, arge): # args=arge
     # 2nd run, reset counter
     line_counter = 1
 
+    # make directory
+    join_directory = os.path.join(WorkDir, FileName.replace('.wrl', ''))
+    os.mkdir(join_directory)
+
     for i in range(0,args):
-        f1 =  open("example_general/txt/coordinate_"+str(i)+".txt", 'w')  # write mode
+
+        f1 =  open(join_directory + "\coordinate_" + str(i) + ".txt", 'w')  # write mode
 
         for line in s_lines:
             line_counter += 1
             if line_counter > start_line[i] and line_counter < end_line[i]-2:
-                f1.write(line.replace(",", ""))
-                f1.write("\n")
+                line = line.replace(',', '')
+                line = line.replace('    ', ' ')
+                line = line.replace('  ', ' ')
+                line = line.replace('  ', ' ')
+                f1.write(line)
+                f1.write('\n')
+
+        f1.close()
 
         # reset counter
         line_counter = 1
 
     f0.close()
-    f1.close()
 
     return 0
 
