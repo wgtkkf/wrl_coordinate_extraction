@@ -7,7 +7,7 @@
 # 3. CATIA > generate .wrl file > VICTORIA > generate .wrl files
 
 # Memo: command for GUI generation
-# pyinstaller --hidden-import natsort --onefile --windowed --add-data "dummy.PNG;." GUI_ver7.py main_routine.py comments.py sizescreen.py remove.py extraction.py output.py merge.py coil.py calculation.py rename.py
+# pyinstaller --hidden-import natsort --onefile --windowed --add-data "dummy.PNG;." GUI_ver7.py comments.py sizescreen.py remove.py extraction.py output.py merge.py coil.py calculation.py rename.py
 # 11 .py files plus 1 image file are included for compiling
 # compiling - stable via python 3.10 on VisualStudio
 # execution - stable via python 3.9 on VisualStudio
@@ -243,7 +243,7 @@ class GUI(tk.Frame):
             messagebox.showerror('Error', 'Please specify your path to .wrl files.')
             self.p.stop()       # stop progress bar
             self.sub.destroy()  # destroy subwindow
-            
+
             return None
 #
 def main():
