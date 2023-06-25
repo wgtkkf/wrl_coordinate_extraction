@@ -141,7 +141,12 @@ class GUI(tk.Frame):
         start = time.time()
 
         #
-        if len(self.folder_path.get()) != 0: # folder_path - from browse_button(self)
+        if len(self.folder_path.get()) != 0 and os.path.isdir(os.path.join(self.folder_path.get(),'Excluded')) == True: # folder_path - from browse_button(self)
+            messagebox.showinfo('Information', 'Screening was already done.')
+            self.p.stop()       # stop progress bar
+            self.sub.destroy()  # destroy subwindow
+
+        elif len(self.folder_path.get()) != 0 and os.path.isdir(os.path.join(self.folder_path.get(),'Excluded')) == False:
 
             # specify your folder of .wrl files, this is referred in the external functions
             wrl_dir = self.folder_path.get()
