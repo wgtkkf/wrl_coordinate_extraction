@@ -21,6 +21,11 @@ def RenameToCoil(WorkDir, arg_num):
     dest = rename_path # destination
     shutil.copy(src,dest)
 
+def RemoveCoil(WorkDir, arg_num):
+
+    coil_wrl = 'Part_' + str(arg_num) + '.wrl'
+    wrl_path = os.path.join(WorkDir, coil_wrl)
+    os.remove(wrl_path)
 
 def RenameInOrder(WorkDir): # WorkDir: .wrl file foler
     #

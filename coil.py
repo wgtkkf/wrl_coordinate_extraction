@@ -41,6 +41,11 @@ def CoilCoordinate(WorkDir, arg_num):
     # ymax
     cfymax = max(cfy)
 
+    # xmin
+    cfxmin = min(abs(cfx)) # positive minimum
+    # ymin
+    cfymin = min(abs(cfy)) # positive minimum
+
     # x-y plane center of gravity (cog)
     cogx = sum(cfx)/row
     cogy = sum(cfy)/row
@@ -49,10 +54,17 @@ def CoilCoordinate(WorkDir, arg_num):
     rx = abs(cfxmax - cogx)
     ry = abs(cfymax - cogy)
 
+    # x-y plane inner radius
+    rxi = abs(cfxmin - cogx)
+    ryi = abs(cfymin - cogy)
+
     # averaged maximum outer radius
     roave = 0.5*(rx+ry)
 
-    return cfzmax, cfzmin, roave, cogx, cogy
+    # averaged minimum inner radius
+    riave = 0.5*(rxi+ryi)
+
+    return cfzmax, cfzmin, roave, riave, cogx, cogy
 
 # time display
 elapsed_time = time.time()-start

@@ -1,7 +1,7 @@
 # Coded by Takuro TOKUNAGA
 # Update history
 # Created: April 20 2022
-# Updataed: June 07 2022 / August 02, 03 2022 / June 12, 2023
+# Updataed: June 07 2022 / August 02, 03 2022 / June 12, 24 2023
 
 import numpy as np
 import time
@@ -13,9 +13,9 @@ import shutil
 import re
 start = time.time()
 
-def JudgeCalculation(WorkDir, FolderName, czmax, czmin, coradius, cx, cy):
+def JudgeCalculation(WorkDir, FolderName, DestFolder, czmax, czmin, coradius, cx, cy):
 
-    FolderName = FolderName.replace('.wrl', '')      # remove .wrl
+    FolderName = FolderName.replace('.wrl', '') # remove .wrl extension
 
     dat_add = FolderName + '.dat'
     dat_path = os.path.join(WorkDir, dat_add)
@@ -26,10 +26,10 @@ def JudgeCalculation(WorkDir, FolderName, czmax, czmin, coradius, cx, cy):
     # open
     mf = pd.read_csv(dat_path, sep=" ", header=None) # mf: merged file, .dat file of surrounding parts
     mf.columns = ["x", "y", "z"]
-    row, col = mf.shape                   # row & column of matorix
-    mfx = np.zeros(row, dtype='float64')  # mfx: coordiante part x
-    mfy = np.zeros(row, dtype='float64')  # mfy: coordiante part y
-    mfz = np.zeros(row, dtype='float64')  # mfz: coordiante part z
+    row, col = mf.shape # row & column of matorix
+    mfx = np.zeros(row, dtype='float64') # mfx: coordiante part x
+    mfy = np.zeros(row, dtype='float64') # mfy: coordiante part y
+    mfz = np.zeros(row, dtype='float64') # mfz: coordiante part z
     dist = np.zeros(row, dtype='float64') # dist: distance table
 
     for i in range(0, row):
@@ -40,19 +40,16 @@ def JudgeCalculation(WorkDir, FolderName, czmax, czmin, coradius, cx, cy):
     # distance calculation from coil center of gravity, x-y plane
     for i in range(0, row):
         dist[i] = np.sqrt(np.power(mfx[i]-cx, 2.0) + np.power(mfy[i]-cy, 2.0))
-
+        #print('Part_' + str(i) + ': ' + str(dist[i])) # debug
 
     # call quick sort for judge 1 & 2 & 3
-    quickSort(mfx, 0, row-1)  # object, min (=0), max (=row-1)
-    quickSort(mfy, 0, row-1)  # object, min (=0), max (=row-1)
-    quickSort(mfz, 0, row-1)  # object, min (=0), max (=row-1)
-    quickSort(dist, 0, row-1) # object, min (=0), max (=row-1)
-
-    # debug
-    print('part: '+ str(wrl_add) + ' ' + str(cx) + ' ' + str(cy) + ' ' + str(abs(cx - abs(mfx[row-1]))) + ' ' + str(abs(cy - abs(mfy[row-1]))) + ' ' + str(coradius))
+    quickSort(mfx, 0, row-1)
+    quickSort(mfy, 0, row-1)
+    quickSort(mfz, 0, row-1)
+    quickSort(dist, 0, row-1)
 
     # flag initialization
-    skipflag = 0              # 0: not skippded / 1: skipped
+    skipflag = 0 # if 0, not skippded. if 1, skipped
 
     # set parameters
     zmargin = 5               # unit: mm
@@ -60,35 +57,41 @@ def JudgeCalculation(WorkDir, FolderName, czmax, czmin, coradius, cx, cy):
     filter_distance = 100     # unit: mm
     filter_thicness = 10      # unit: mm
 
+    # judge 0: far parts, more than 30
     # judge 0: far parts
     if abs(dist[0]) > filter_distance: # this is a fitting parmater
         print(FolderName + ' Distance [mm]: ' + str('{:.2f}'.format(dist[0])) + ',' + ' Too far part, skipped')
         skipflag = 1
+        shutil.move(wrl_path, DestFolder)
 
     # judge 1 & judge 2: small thickness parts (filter 1 for noise parts removal)
     elif abs(abs(mfz[0])-abs(mfz[row-1])) <= filter_thicness or np.std(mfz) < filter_thicness: # 10, this is a fitting parmater
         print(FolderName + ' Noise part, skipped')
         skipflag = 1
+        shutil.move(wrl_path, DestFolder)
 
     # judge 3: upper z and lower z: region 1
     elif mfz[0] > czmax + zmargin or mfz[row-1] < czmin - zmargin:
         print(FolderName + ' Region 1, skipped')
         skipflag = 1
+        shutil.move(wrl_path, DestFolder)
 
     # judge 4: outside of a coil: region 2
     elif mfz[0] >= czmin - zmargin and mfz[row-1] <= czmax + zmargin and dist[0] >= coradius + rmargin:
         print(FolderName + ' Region 2, skipped')
         skipflag = 1
+        shutil.move(wrl_path, DestFolder)
 
     # judge 5: inside of a coil, region 1 & 3
     elif abs(cx - abs(mfx[row-1])) < coradius*0.60 and abs(cy - abs(mfy[row-1])) < coradius*0.60: # 60 %, this is a fitting parameter
         print(FolderName + ' Region 1 & 3, inside of the coil, skipped')
         skipflag = 1
+        shutil.move(wrl_path, DestFolder)
 
     else: # "s_... .wrl" is the remaining files to be used for clearance check
         src = wrl_path # source
-        dest = WorkDir + '\s_'+ FolderName + '.wrl' # s: screened, dest: destination
-        shutil.copy(src,dest)
+        #dest = WorkDir + '\s_'+ FolderName + '.wrl' # s: screened, dest: destination
+        #shutil.copy(src,dest)
         skipflag = 0
 
     return skipflag
@@ -101,7 +104,8 @@ def partition(arr, low, high):
 
     for j in range(low, high):
 
-        # If current element is smaller than or equal to pivot
+        # If current element is smaller than or
+        # equal to pivot
         if arr[j] <= pivot:
 
             # increment index of smaller element
