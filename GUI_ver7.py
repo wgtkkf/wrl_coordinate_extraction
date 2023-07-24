@@ -1,5 +1,7 @@
 # Created on June 13, 2023
-# Update history: June 13, 19-21 2023
+# Update history:
+# June 13, 19-21 2023
+# July 24, 2023
 
 # What is this code for?
 # 1. Screen unnecessary .wrl files for clearance check via VICTORIA
@@ -7,7 +9,7 @@
 # 3. CATIA > generate .wrl file > VICTORIA > generate .wrl files
 
 # Memo: command for GUI generation
-# pyinstaller --hidden-import natsort --onefile --windowed --add-data "dummy.PNG;." GUI_ver7.py comments.py sizescreen.py remove.py extraction.py output.py merge.py coil.py calculation.py rename.py
+# pyinstaller --hidden-import natsort --onefile --windowed --add-data "cover.png;." GUI_ver7.py comments.py sizescreen.py remove.py extraction.py output.py merge.py coil.py calculation.py rename.py
 # 11 .py files plus 1 image file are included for compiling
 # compiling - stable via python 3.10 on VisualStudio
 # execution - stable via python 3.9 on VisualStudio
@@ -49,7 +51,7 @@ from natsort import natsorted
 
 # import functions from .py files
 from comments import begin               # import function, called in the main routine
-from comments import end                 # import function, called in the main routine
+from comments import fin                 # import function, called in the main routine
 from sizescreen import screenfilesize    # import function, called in the main routine
 from remove import RemoveDirectory       # import function, called in the main routine
 from extraction import CoordinateCatch   # import function, called in the main routine
@@ -84,7 +86,7 @@ class GUI(tk.Frame):
             return os.path.join(base_path, relative_path)
 
         # load image
-        load = PIL.Image.open(resource_path("dummy.png"))
+        load = PIL.Image.open(resource_path("cover.png"))
 
         # Resize the image using resize() method
         resize_image = load.resize((338, 253)) # width x height
@@ -110,6 +112,13 @@ class GUI(tk.Frame):
         # Exist button
         self.exit_button = Button(self, text="Exit", command=master.destroy) # not self but master
         self.exit_button.grid(row=2,column=0,padx=0)
+
+        # status updating box
+        self.ls1=Label(self,text="Status")
+        self.ls1.grid(row=1,column=1)
+        self.ts1=Entry(self, width=50)
+        self.ts1.insert(END, 'Progress status is shown in this box.') # initial value
+        self.ts1.grid(row=2,column=1)
 
     #
     def progressBar(self): # self.screen function is targeted
@@ -142,9 +151,10 @@ class GUI(tk.Frame):
 
         #
         if len(self.folder_path.get()) != 0 and os.path.isdir(os.path.join(self.folder_path.get(),'Excluded')) == True: # folder_path - from browse_button(self)
-            messagebox.showinfo('Information', 'Screening was already done.')
             self.p.stop()       # stop progress bar
             self.sub.destroy()  # destroy subwindow
+            # show message
+            messagebox.showinfo('Information', 'Screening was already done.')
 
         elif len(self.folder_path.get()) != 0 and os.path.isdir(os.path.join(self.folder_path.get(),'Excluded')) == False:
 
@@ -164,18 +174,20 @@ class GUI(tk.Frame):
             for file in sorted(files):
                 counter += 1
 
-            end = counter
+            total = counter
             #
             try:
                 if(counter == 0):
-                    messagebox.showerror('Error', 'No .wrl file was found. Please generate a group of .wrl files via VICTORIA.')
                     self.p.stop()       # stop progress bar
                     self.sub.destroy()  # destroy subwindow
+                    # show message
+                    messagebox.showerror('Error', 'No .wrl file was found. Please generate a group of .wrl files via VICTORIA.')
 
                 elif(counter == 1):
-                    messagebox.showerror('Error', 'Only one .wrl file was found. Perhaps splitting into a group of .wrl files was not done. Please back to VICTORIA.')
                     self.p.stop()       # stop progress bar
                     self.sub.destroy()  # destroy subwindow
+                    # show message
+                    messagebox.showerror('Error', 'Only one .wrl file was found. Perhaps splitting into a group of .wrl files was not done. Please back to VICTORIA.')
 
                 else:
 
@@ -184,15 +196,20 @@ class GUI(tk.Frame):
                     for file in natsorted(files):
 
                         print(os.path.split(file)[1])
+                        # console display
+                        self.ts1.delete(0, END)                                                                # clear
+                        self.ts1.insert(0, str('Extracting Coordinates: ' + os.path.split(file)[1]) + ' / ' +str(total) + ' parts') # insert == print
+                        self.ts1.grid(row=2,column=1)                                                          # position
+
                         wrl_file = os.path.split(file)[1]
 
                         # extraction routine
-                        num1 = CoordinateCatch(wrl_dir, wrl_file)[0]    # call function, extraction
-                        num2 = CoordinateCatch(wrl_dir, wrl_file)[1]    # call function, extraction
-                        writetofile(num1, num2, wrl_dir, wrl_file)      # call function, output
+                        num1 = CoordinateCatch(wrl_dir, wrl_file)[0]     # call function, extraction
+                        num2 = CoordinateCatch(wrl_dir, wrl_file)[1]     # call function, extraction
+                        writetofile(num1, num2, wrl_dir, wrl_file)       # call function, output
 
                         # merge text files
-                        FileMerge(wrl_dir, wrl_file)                    # call function, merge - create .dat
+                        FileMerge(wrl_dir, wrl_file)                     # call function, merge - create .dat
 
                         counter += 1
 
@@ -213,6 +230,11 @@ class GUI(tk.Frame):
                     # comparison and judgement
                     for i in range(1, counter+1, 1):
                         wrl_file = 'Part_' + str(i) + '.wrl'
+
+                        # console display
+                        self.ts1.delete(0, END)                                       # clear
+                        self.ts1.insert(0, 'Screening: ' + 'Part_' + str(i) + '.wrl') # insert == print
+                        self.ts1.grid(row=2,column=1)
 
                         if i < counter:
 
@@ -235,19 +257,30 @@ class GUI(tk.Frame):
                     # removal of unnecessary .dat files
                     RemoveDatWorkFolder(wrl_dir)                        # call function, remove
 
-                    messagebox.showinfo('Information', 'Screening was completed.')
+                    print('Screening was completed.')
 
+                    # console display
+                    self.ts1.delete(0, END)                  # clear
+                    self.ts1.insert(0, 'Process completed.') # insert == print
+                    self.ts1.grid(row=2,column=1)
+
+                    #
                     self.p.stop()       # stop progress bar
                     self.sub.destroy()  # destroy subwindow
+
+                    # show message
+                    messagebox.showinfo('Information', 'Screening was completed.')
 
             except:
                 print('Screening program was executed properly.')
                 self.p.stop()       # stop progress bar
                 self.sub.destroy()  # destroy subwindow
         else:
-            messagebox.showerror('Error', 'Please specify your path to .wrl files.')
             self.p.stop()       # stop progress bar
             self.sub.destroy()  # destroy subwindow
+
+            # show message
+            messagebox.showerror('Error', 'Please specify your path to .wrl files.')
 
             return None
 #

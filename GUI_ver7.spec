@@ -8,7 +8,7 @@ a = Analysis(
     ['GUI_ver7.py', 'comments.py', 'sizescreen.py', 'remove.py', 'extraction.py', 'output.py', 'merge.py', 'coil.py', 'calculation.py', 'rename.py'],
     pathex=[],
     binaries=[],
-    datas=[('dummy.PNG', '.')],
+    datas=[('cover.png', '.')],
     hiddenimports=['natsort'],
     hookspath=[],
     hooksconfig={},

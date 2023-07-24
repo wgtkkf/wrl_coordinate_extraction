@@ -1,9 +1,10 @@
 # Coded by Takuro TOKUNAGA
-# Last updated: April 20 2022
-
+# Update history
+# April 20 2022
+# July  24 2023: function name was updated from end to fin
 
 def begin():
     print('start')
 
-def end():
+def fin():
     print('done')
